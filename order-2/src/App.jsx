@@ -26,14 +26,31 @@ const App = () => {
     const [rectangles, setRectangles] = useState([]);
     const [rectanglesToDraw, setRectanglesToDraw] = useState([]);
     const [photoId, setPhotoId] = useState(null);
+    const [selectedFilter, setSelectedFilter] = useState("all");
 
 
     useEffect(() => {
-        const filteredImages = images.filter(uploadedImage =>
-            uploadedImage.fileName.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setSearchResults(filteredImages);
-    }, [searchText, images]);
+        const results = images.filter((image) => {
+            // Check if the image has rectangles
+            const hasRectangles = imageRectangles[image.url] && imageRectangles[image.url].length > 0;
+            console.log("hasRectangles: " + imageRectangles[image.url].length+" "+image.url);
+    
+            // Check based on the selected filter
+            if (selectedFilter === "all") {
+                return image.fileName.toLowerCase().includes(searchText.toLowerCase());
+            } else if (selectedFilter === "withoutAnnotations") {
+                return !hasRectangles && image.fileName.toLowerCase().includes(searchText.toLowerCase());
+            } else if (selectedFilter === "withAnnotations") {
+                return hasRectangles && image.fileName.toLowerCase().includes(searchText.toLowerCase());
+            }
+    
+            return true; // Default case
+        });
+    
+        setSearchResults(results);
+    }, [searchText, images, selectedFilter, imageRectangles]);
+
+
 
     const handleOpen = () => {
         if (!imageFile) {
@@ -98,13 +115,16 @@ const App = () => {
 
     const handleRectanglesChange = (photoId, newRectangles) => {
         setImageRectangles((prevImageRectangles) => {
+            console.log("prev "+prevImageRectangles.length);
 
             const updatedRectangles = {
                 ...prevImageRectangles,
                 [photoId]: newRectangles,
             };
+            console.log("updated " + updatedRectangles.length);
 
             const allRectangles = Object.values(updatedRectangles).flat();
+            console.log("all " + allRectangles.filter((rect) => rect.photoId === photoId).length);
             setRectanglesToDraw(allRectangles);
 
             return updatedRectangles;
@@ -121,6 +141,7 @@ const App = () => {
         setRectanglesToDraw(initialRectangles);
     };
 
+    
     useEffect(() => {
         const storedRectangles = loadRectanglesFromLocalStorage(selectedImage);
         setSelectedImageRectangles(storedRectangles);
@@ -132,6 +153,8 @@ const App = () => {
 
     const loadRectanglesFromLocalStorage = (imageUrl) => {
         const storedRectangles = JSON.parse(localStorage.getItem("rectangles")) || {};
+        const localStorageContent = JSON.stringify(storedRectangles);
+        console.log(storedRectangles.length+"storedRectangles");
         return storedRectangles[imageUrl] || [];
     };
 
@@ -141,6 +164,7 @@ const App = () => {
         setImageUrl(newImageUrl);
 
         const rectanglesForImage = loadRectanglesFromLocalStorage(newImageUrl);
+        console.log(rectanglesForImage.lenth+"rectanglesForImage");
         setRectangles(rectanglesForImage);
         setRectanglesToDraw(rectanglesForImage);
     };
@@ -190,10 +214,10 @@ const App = () => {
                         },
                         '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                                borderColor: 'gray',
+                                borderColor: 'blue',
                             },
                             '&:hover fieldset': {
-                                borderColor: 'darkgray',
+                                borderColor: 'blue',
                             },
                             '&.Mui-focused fieldset': {
                                 borderColor: 'blue',
@@ -204,8 +228,41 @@ const App = () => {
                     variant="outlined"
                     onChange={(e) => setSearchText(e.target.value)}
                 />
+                <Select
+                    sx={{
+                        marginTop: '20px',
+                        marginLeft: '20px',
+                        width: '80%',
+                        color: 'white',
+                        '& .MuiInputBase-root': {
+                            backgroundColor: 'white',
+                        },
+                        '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                                borderColor: 'gray',
+                            },
+                            '&:hover fieldset': {
+                                borderColor: 'blue',
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: 'blue',
+                            },
+                        },
+                    }}
+                    label="Filter"
+                    variant="outlined"
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
 
-                <Box sx={{ height: 'calc(100% - 120px)', overflowY: 'auto', marginTop: '20px', marginLeft: '30px', }}>
+                >
+                    <MenuItem value="all">всі файли</MenuItem>
+                    <MenuItem value="withoutAnnotations">файли без анотацій</MenuItem>
+                    <MenuItem value="withAnnotations">файли з анотаціями</MenuItem>
+                </Select>
+
+
+
+                <Box sx={{ height: '100%', overflowY: 'auto', marginTop: '20px', marginLeft: '30px', }}>
                     {searchResults.map((uploadedImage, index) => (
                         <Button
                             key={index}
@@ -215,7 +272,7 @@ const App = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 marginTop: '10px',
-                                marginLeft: '60px',
+                                marginLeft: '45px',
                                 width: '100px',
                                 height: '100px',
                                 position: 'relative',
@@ -230,6 +287,7 @@ const App = () => {
                             variant="contained"
                             onClick={() => {
                                 handleImageChange(uploadedImage.url);
+                                
                             }}
                         >
                             <img
@@ -244,13 +302,18 @@ const App = () => {
 
                         </Button>
                     ))}
-
-                    <Box sx={{ marginTop: '20px', marginLeft: '80px', color: 'black', fontSize: '20px', fontWeight: '600' }}>
+                    <Box sx={{
+                         position: 'fixed',
+                         bottom: '20px',
+                         marginLeft: '55px',
+                         color: 'black', 
+                         fontSize: '20px',
+                         fontWeight: '600' }}>
                         Total : {images.length}
                     </Box>
 
                     <Button
-                        sx={{ marginTop: '20px', marginLeft: '55px' }}
+                        sx={{  position: 'fixed', bottom: '55px', marginLeft: '35px' }}
                         variant="contained"
                         onClick={handleExport}
                         startIcon={<SaveAltIcon />}

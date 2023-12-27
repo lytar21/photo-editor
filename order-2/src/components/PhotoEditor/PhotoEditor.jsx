@@ -19,10 +19,13 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
     const initialY = (window.innerHeight - imageDimensions.height) / 2;
 
     useEffect(() => {
-        if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
+        console.log("rectanglesAreEqual: " + areRectanglesEqual(rectanglesToDraw, rectangles));
+        console.log("rectanglesToDraw: " + rectanglesToDraw.length);
+        console.log("rectangles: " + rectangles.length);
+        if (areRectanglesEqual(rectanglesToDraw, rectangles)) {
             setRectangles(rectanglesToDraw);
+            console.log("rectanglesToDraw: " + rectanglesToDraw.length);
             onRectanglesChange(photoId, rectanglesToDraw);
-            
         }
     }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
 
@@ -38,7 +41,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         if (rectangles1.length !== rectangles2.length) {
             return false;
         }
-    
+
         for (let i = 0; i < rectangles1.length; i++) {
             if (!areIndividualRectanglesEqual(rectangles1[i], rectangles2[i])) {
                 return false;
@@ -74,7 +77,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                                 onChange={(newAttrs) => {
                                     const rects = rectanglesToDraw.slice();
                                     rects[i] = newAttrs;
-                                    onRectanglesChange(photoId, rects);
+                                    setRectangles(rects);
                                 }}
                             />
                         ))}

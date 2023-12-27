@@ -10,7 +10,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const [newRectangle, setNewRectangle] = useState([]);
 
     const [rectangles, setRectangles] = useState(initialRectangles || []);
-    const rectanglesToDraw = rectangles.filter((rect) => rect.photoId === photoId);
+    const rectanglesToDraw = Array.isArray(rectangles)? rectangles.filter((rect) => rect.photoId === photoId) : [];
     const [selectedIds, selectShapes] = useState([]);
     const trRef = useRef();
     const selectionRectRef = useRef();
@@ -36,7 +36,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             y <= imageRect.y + imageRect.height
         );
     };
-
+    
     const calculateRelativePosition = (coordinate, scale) => coordinate / scale;
     const calculateRelativeSize = (size, scale) => size / scale;
 
@@ -122,6 +122,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const handleMouseUp = () => {
         if (newRectangle.length === 1) {
             setRectangles((prevRectangles) => {
+                prevRectangles = Array.isArray(prevRectangles)? prevRectangles : [];
                 const updatedRectangles = [...prevRectangles, newRectangle[0]];
                 return updatedRectangles;
             });

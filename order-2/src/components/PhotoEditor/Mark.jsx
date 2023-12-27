@@ -20,7 +20,7 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       x + width <= imageRect.x + imageRect.width &&
       y + height <= imageRect.y + imageRect.height;
 
-    if (rectangleWithinImage) {
+    if (!rectangleWithinImage) {
       setLastRectPositionWithinImage({ x, y });
     }
   };
