@@ -15,10 +15,13 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
     const imageRect = imageRef.current.getClientRect();
 
     const rectangleWithinImage =
-      x >= imageRect.x &&
-      y >= imageRect.y &&
-      x + width <= imageRect.x + imageRect.width &&
-      y + height <= imageRect.y + imageRect.height;
+      (x >= imageRect.x) &&
+      (y >= imageRect.y) &&
+      ((x + width) <= (imageRect.x + imageRect.width)) &&
+      ((y + height) <= (imageRect.y + imageRect.height));
+      console.log("rectangleWithinImage: " + rectangleWithinImage);
+      lastRectPositionWithinImage.x = x;
+      lastRectPositionWithinImage.y = y;
 
     if (!rectangleWithinImage) {
       setLastRectPositionWithinImage({ x, y });
@@ -32,16 +35,32 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       {...shapeProps}
       name="rectangle"
       draggable
-      stroke={color}
-      strokeWidth={10}
+      stroke={color + "15"}
+      strokeWidth={5}
+
+      onMouseEnter={(e) => {
+        const rect = e.target;
+        rect.stroke(color);
+        rect.getStage().container().style.cursor = "move";
+      }
+
+      }
+      onMouseLeave={(e) => {
+        const rect = e.target;
+        rect.stroke(color + "15");
+        rect.getStage().container().style.cursor = "default";
+      }}
+
       onDragStart={onDrag}
       onDragMove={onDrag}
       onDragEnd={() => {
-        onChange({
-          ...shapeProps,
-          ...lastRectPositionWithinImage,
-        });
-      }}
+           onChange({
+             ...shapeProps,
+             console: console.log("lastRectPositionWithinImage: " + lastRectPositionWithinImage.x),
+             x: lastRectPositionWithinImage.x,
+             y: lastRectPositionWithinImage.y,
+           });
+        }}
       onTransformEnd={(e) => {
         const node = shapeRef.current;
         const scaleX = node.scaleX();

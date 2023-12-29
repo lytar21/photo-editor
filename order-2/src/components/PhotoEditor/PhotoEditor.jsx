@@ -3,6 +3,7 @@ import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
 import { useImageStage } from "./useImageStage.js";
 import Mark from "./Mark";
 
+let i = 0;
 const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor, rectangles, onRectanglesChange, photoId, onRectanglesExistenceChange }) => {
     const {
         rectanglesToDraw,
@@ -22,11 +23,12 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         console.log("rectanglesAreEqual: " + areRectanglesEqual(rectanglesToDraw, rectangles));
         console.log("rectanglesToDraw: " + rectanglesToDraw.length);
         console.log("rectangles: " + rectangles.length);
-        if (areRectanglesEqual(rectanglesToDraw, rectangles)) {
+        if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
             setRectangles(rectanglesToDraw);
             console.log("rectanglesToDraw: " + rectanglesToDraw.length);
             onRectanglesChange(photoId, rectanglesToDraw);
         }
+        else{console.log("rectangles are equal " + i++)}
     }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
 
     const areRectanglesEqual = (rectanglesArray1, rectanglesArray2) => {
@@ -76,7 +78,8 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                                 color = {initialColor}
                                 onChange={(newAttrs) => {
                                     const rects = rectanglesToDraw.slice();
-                                    rects[i] = newAttrs;
+                                    rects[i].x = newAttrs.x;
+                                    rects[i].y = newAttrs.y; 
                                     setRectangles(rects);
                                 }}
                             />

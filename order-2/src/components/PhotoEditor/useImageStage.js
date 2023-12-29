@@ -10,7 +10,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const [newRectangle, setNewRectangle] = useState([]);
 
     const [rectangles, setRectangles] = useState(initialRectangles || []);
-    const rectanglesToDraw = Array.isArray(rectangles)? rectangles.filter((rect) => rect.photoId === photoId) : [];
+    const rectanglesToDraw = rectangles.length>0? rectangles.filter((rect) => rect.photoId === photoId) : [];
     const [selectedIds, selectShapes] = useState([]);
     const trRef = useRef();
     const selectionRectRef = useRef();
@@ -30,10 +30,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const isWithinImageBounds = (x, y) => {
         const imageRect = imageRef.current.getClientRect();
         return (
-            x >= imageRect.x &&
-            x <= imageRect.x + imageRect.width &&
-            y >= imageRect.y &&
-            y <= imageRect.y + imageRect.height
+            (x >= imageRect.x) &&
+            (x <= (imageRect.x + imageRect.width)) &&
+            (y >= imageRect.y )&&
+            (y <= (imageRect.y + imageRect.height))
         );
     };
     
@@ -61,9 +61,9 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                 // DEL key is pressed
                 // Delete selected rectangles
                 setRectangles((prevRectangles) => {
-                    const updatedRectangles = prevRectangles.filter(
+                    const updatedRectangles = prevRectangles.length>0 ? prevRectangles.filter(
                         (rect) => !selectedIds.includes(rect.id)
-                    );
+                    ): [];
                     selectShapes([]);
                     return updatedRectangles;
                 });
@@ -122,7 +122,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const handleMouseUp = () => {
         if (newRectangle.length === 1) {
             setRectangles((prevRectangles) => {
-                prevRectangles = Array.isArray(prevRectangles)? prevRectangles : [];
+                prevRectangles = prevRectangles.length>0? prevRectangles : [];
                 const updatedRectangles = [...prevRectangles, newRectangle[0]];
                 return updatedRectangles;
             });
@@ -214,10 +214,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         trRef,
         selectionRectRef,
         setRectangles: (newRectangles) => {
-            setRectangles((prevRectangles) => ({
-                ...prevRectangles,
-                [photoId]: newRectangles,
-            }));
+            setRectangles(newRectangles);
+        
         },
         imageRef,
         stageProps: {

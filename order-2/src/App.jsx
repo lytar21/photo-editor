@@ -31,24 +31,11 @@ const App = () => {
 
     useEffect(() => {
         const results = images.filter((image) => {
-            // Check if the image has rectangles
-            const hasRectangles = imageRectangles[image.url] && imageRectangles[image.url].length > 0;
-            console.log("hasRectangles: " + imageRectangles[image.url].length+" "+image.url);
-    
-            // Check based on the selected filter
-            if (selectedFilter === "all") {
-                return image.fileName.toLowerCase().includes(searchText.toLowerCase());
-            } else if (selectedFilter === "withoutAnnotations") {
-                return !hasRectangles && image.fileName.toLowerCase().includes(searchText.toLowerCase());
-            } else if (selectedFilter === "withAnnotations") {
-                return hasRectangles && image.fileName.toLowerCase().includes(searchText.toLowerCase());
-            }
-    
-            return true; // Default case
+            return image.fileName.toLowerCase().includes(searchText.toLowerCase());
         });
     
         setSearchResults(results);
-    }, [searchText, images, selectedFilter, imageRectangles]);
+    }, [searchText, images, imageRectangles]);
 
 
 
@@ -115,7 +102,7 @@ const App = () => {
 
     const handleRectanglesChange = (photoId, newRectangles) => {
         setImageRectangles((prevImageRectangles) => {
-            console.log("prev "+prevImageRectangles.length);
+            console.log("prev "+ prevImageRectangles.length);
 
             const updatedRectangles = {
                 ...prevImageRectangles,
@@ -263,7 +250,8 @@ const App = () => {
 
 
                 <Box sx={{ height: '100%', overflowY: 'auto', marginTop: '20px', marginLeft: '30px', }}>
-                    {searchResults.map((uploadedImage, index) => (
+                    {
+                    searchResults.map((uploadedImage, index) => (
                         <Button
                             key={index}
                             sx={{
@@ -287,7 +275,6 @@ const App = () => {
                             variant="contained"
                             onClick={() => {
                                 handleImageChange(uploadedImage.url);
-                                
                             }}
                         >
                             <img
