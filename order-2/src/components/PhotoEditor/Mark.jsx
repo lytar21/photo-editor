@@ -56,7 +56,6 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       onDragEnd={() => {
            onChange({
              ...shapeProps,
-             console: console.log("lastRectPositionWithinImage: " + lastRectPositionWithinImage.x),
              x: lastRectPositionWithinImage.x,
              y: lastRectPositionWithinImage.y,
            });

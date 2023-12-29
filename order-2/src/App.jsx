@@ -27,17 +27,22 @@ const App = () => {
     const [rectanglesToDraw, setRectanglesToDraw] = useState([]);
     const [photoId, setPhotoId] = useState(null);
     const [selectedFilter, setSelectedFilter] = useState("all");
-
+    const imageRectanglesLength = imageRectangles.length;
 
     useEffect(() => {
         const results = images.filter((image) => {
-            return image.fileName.toLowerCase().includes(searchText.toLowerCase());
-        });
-    
+            const res = image.fileName.toLowerCase().includes(searchText.toLowerCase());
+            if (selectedFilter === "all") {
+                return res;
+            } else if (selectedFilter === "withoutAnnotations") {
+                return res && localStorage.getItem(image.url) === null || localStorage.getItem(image.url) === "[]";
+            } else if (selectedFilter === "withAnnotations") {
+                return res && localStorage.getItem(image.url) !== null && localStorage.getItem(image.url) !== "[]";
+            }
+        }
+        );
         setSearchResults(results);
-    }, [searchText, images, imageRectangles]);
-
-
+    }, [searchText, images, selectedFilter]);
 
     const handleOpen = () => {
         if (!imageFile) {
@@ -102,7 +107,7 @@ const App = () => {
 
     const handleRectanglesChange = (photoId, newRectangles) => {
         setImageRectangles((prevImageRectangles) => {
-            console.log("prev "+ prevImageRectangles.length);
+            console.log("prev " + prevImageRectangles.length);
 
             const updatedRectangles = {
                 ...prevImageRectangles,
@@ -128,7 +133,7 @@ const App = () => {
         setRectanglesToDraw(initialRectangles);
     };
 
-    
+
     useEffect(() => {
         const storedRectangles = loadRectanglesFromLocalStorage(selectedImage);
         setSelectedImageRectangles(storedRectangles);
@@ -139,9 +144,9 @@ const App = () => {
 
 
     const loadRectanglesFromLocalStorage = (imageUrl) => {
-        const storedRectangles = JSON.parse(localStorage.getItem("rectangles")) || {};
+        const storedRectangles = JSON.parse(localStorage.getItem(imageUrl)) || {};
         const localStorageContent = JSON.stringify(storedRectangles);
-        console.log(storedRectangles.length+"storedRectangles");
+        console.log(storedRectangles.length + "storedRectangles");
         return storedRectangles[imageUrl] || [];
     };
 
@@ -149,9 +154,9 @@ const App = () => {
         setPhotoId(newImageUrl);
         setSelectedImage(newImageUrl);
         setImageUrl(newImageUrl);
+        localStorage.setItem(newImageUrl, JSON.stringify(imageRectangles[newImageUrl] || []));
 
-        const rectanglesForImage = loadRectanglesFromLocalStorage(newImageUrl);
-        console.log(rectanglesForImage.lenth+"rectanglesForImage");
+        const rectanglesForImage = localStorage.getItem(newImageUrl) || [];
         setRectangles(rectanglesForImage);
         setRectanglesToDraw(rectanglesForImage);
     };
@@ -251,56 +256,59 @@ const App = () => {
 
                 <Box sx={{ height: '100%', overflowY: 'auto', marginTop: '20px', marginLeft: '30px', }}>
                     {
-                    searchResults.map((uploadedImage, index) => (
-                        <Button
-                            key={index}
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginTop: '10px',
-                                marginLeft: '45px',
-                                width: '100px',
-                                height: '100px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                '&:hover': {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                                },
-                                '&:active': {
-                                    backgroundColor: 'rgba(223, 240, 255, 0.8) !important',
-                                },
-                            }}
-                            variant="contained"
-                            onClick={() => {
-                                handleImageChange(uploadedImage.url);
-                            }}
-                        >
-                            <img
-                                src={uploadedImage.url}
-                                alt={uploadedImage.fileName}
-                                style={{ width: '100%', height: '80%', objectFit: 'cover' }}
-                            />
+                        // we will filter the results by the selected filter imageRectangles[selectedImage] || []
 
-                            <div style={{ fontSize: '12px', marginBottom: '5px' }}>
-                                {uploadedImage.fileName}
-                            </div>
+                        searchResults.map((uploadedImage, index) => (
+                            <Button
+                                key={index}
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginTop: '10px',
+                                    marginLeft: '45px',
+                                    width: '100px',
+                                    height: '100px',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                                    },
+                                    '&:active': {
+                                        backgroundColor: 'rgba(223, 240, 255, 0.8) !important',
+                                    },
+                                }}
+                                variant="contained"
+                                onClick={() => {
+                                    handleImageChange(uploadedImage.url);
+                                }}
+                            >
+                                <img
+                                    src={uploadedImage.url}
+                                    alt={uploadedImage.fileName}
+                                    style={{ width: '100%', height: '80%', objectFit: 'cover' }}
+                                />
 
-                        </Button>
-                    ))}
+                                <div style={{ fontSize: '12px', marginBottom: '5px' }}>
+                                    {uploadedImage.fileName}
+                                </div>
+
+                            </Button>
+                        ))}
                     <Box sx={{
-                         position: 'fixed',
-                         bottom: '20px',
-                         marginLeft: '55px',
-                         color: 'black', 
-                         fontSize: '20px',
-                         fontWeight: '600' }}>
+                        position: 'fixed',
+                        bottom: '20px',
+                        marginLeft: '55px',
+                        color: 'black',
+                        fontSize: '20px',
+                        fontWeight: '600'
+                    }}>
                         Total : {images.length}
                     </Box>
 
                     <Button
-                        sx={{  position: 'fixed', bottom: '55px', marginLeft: '35px' }}
+                        sx={{ position: 'fixed', bottom: '55px', marginLeft: '35px' }}
                         variant="contained"
                         onClick={handleExport}
                         startIcon={<SaveAltIcon />}

@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
 import { useImageStage } from "./useImageStage.js";
 import Mark from "./Mark";
+let k=0;
 
-let i = 0;
 const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor, rectangles, onRectanglesChange, photoId, onRectanglesExistenceChange }) => {
     const {
         rectanglesToDraw,
@@ -21,14 +21,12 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
     useEffect(() => {
         console.log("rectanglesAreEqual: " + areRectanglesEqual(rectanglesToDraw, rectangles));
-        console.log("rectanglesToDraw: " + rectanglesToDraw.length);
-        console.log("rectangles: " + rectangles.length);
+        console.log("rectanglesToDraw: " + rectanglesToDraw.length + " "+ k++);
         if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
             setRectangles(rectanglesToDraw);
-            console.log("rectanglesToDraw: " + rectanglesToDraw.length);
-            onRectanglesChange(photoId, rectanglesToDraw);
+            onRectanglesChange(image.name, rectanglesToDraw);
         }
-        else{console.log("rectangles are equal " + i++)}
+        localStorage.setItem(photoId, JSON.stringify(rectanglesToDraw));
     }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
 
     const areRectanglesEqual = (rectanglesArray1, rectanglesArray2) => {
@@ -70,7 +68,8 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                             y={initialY}
                         />
 
-                        {rectanglesToDraw.map((rect, i) => (
+                        {rectanglesToDraw.filter((rect) => rect.photoId === photoId).
+                        map((rect, i) => (
                             <Mark
                                 imageRef={imageRef}
                                 key={i}

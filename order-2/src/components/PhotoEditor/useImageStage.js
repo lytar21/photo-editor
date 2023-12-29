@@ -57,6 +57,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         };
 
         const handleKeyDown = (e) => {
+            console.log("key pressed");
             if (e.keyCode === 46 && selectedIds.length > 0) {
                 // DEL key is pressed
                 // Delete selected rectangles
@@ -65,6 +66,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                         (rect) => !selectedIds.includes(rect.id)
                     ): [];
                     selectShapes([]);
+                    // delete rectangles from the local storage
+                    localStorage[photoId] = JSON.stringify(updatedRectangles);
                     return updatedRectangles;
                 });
             }
@@ -114,7 +117,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
             updatedRect.width = calculateRelativeSize(x - stage.x, stage.scale) - updatedRect.x;
             updatedRect.height = calculateRelativeSize(y - stage.y, stage.scale) - updatedRect.y;
-
+            
             setNewRectangle([updatedRect]);
         }
     };
@@ -122,7 +125,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const handleMouseUp = () => {
         if (newRectangle.length === 1) {
             setRectangles((prevRectangles) => {
-                prevRectangles = prevRectangles.length>0? prevRectangles : [];
+                prevRectangles = prevRectangles.length > 0 ? prevRectangles : [];
                 const updatedRectangles = [...prevRectangles, newRectangle[0]];
                 return updatedRectangles;
             });
@@ -151,6 +154,20 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
           y: (stage.getPointerPosition().y / newScale - mousePointTo.y) * newScale,
         }));
       };
+
+      // now we'll handle the image movement while central mouse button is pressed
+    const handleMiddleMouse = (e) => {
+        e.evt.preventDefault();
+        const stage = e.target.getStage();
+        const oldX = stage.x();
+        const oldY = stage.y();
+        const { x, y } = stage.getPointerPosition();
+        setStage((prevStage) => ({
+          ...prevStage,
+          x: x - oldX,
+          y: y - oldY,
+        }));
+      };
       
 
     const checkDeselect = (e) => {
@@ -162,7 +179,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     const onClickTap = (e) => {
         const { x1, x2, y1, y2 } = selection.current;
-        const moved = x1 !== x2 || y1 !== y2;
+        const moved = ((x1 !== x2) || (y1 !== y2));
         if (moved) {
             return;
         }
@@ -195,6 +212,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         }
         layer.draw();
     };
+
 
     useEffect(() => {
         const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id));
