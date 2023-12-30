@@ -5,12 +5,13 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
   const shapeRef = useRef();
   const [lastRectPositionWithinImage, setLastRectPositionWithinImage] = useState({});
 
+  const strokeWidth = 5;
+
   const onDrag = (e) => {
     const width = e.currentTarget.width();
     const height = e.currentTarget.height();
     const x = e.currentTarget.x();
     const y = e.currentTarget.y();
-    console.log("x: " + x + " y: " + y + " width: " + width + " height: " + height);
 
     const imageRect = imageRef.current.getClientRect();
 
@@ -19,7 +20,6 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       (y >= imageRect.y) &&
       ((x + width) <= (imageRect.x + imageRect.width)) &&
       ((y + height) <= (imageRect.y + imageRect.height));
-    console.log("rectangleWithinImage: " + rectangleWithinImage);
     lastRectPositionWithinImage.x = x;
     lastRectPositionWithinImage.y = y;
 
@@ -36,20 +36,21 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       name="rectangle"
       draggable
       stroke={color + "15"}
-      strokeWidth={5}
+
 
       onMouseEnter={(e) => {
         const rect = e.target;
-        rect.stroke(color);
+        rect.stroke(color + "15");
         rect.getStage().container().style.cursor = "move";
       }
 
       }
       onMouseLeave={(e) => {
         const rect = e.target;
-        rect.stroke(color + "15");
+        rect.stroke(color);
         rect.getStage().container().style.cursor = "default";
       }}
+
 
       onDragStart={onDrag}
       onDragMove={onDrag}
@@ -75,6 +76,10 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
           height: height,
         });
       }}
+
+      strokeScaleEnabled={false}
+      strokeWidth={strokeWidth}
+
     />
   );
 };

@@ -142,7 +142,6 @@ const App = () => {
     const loadRectanglesFromLocalStorage = (imageUrl) => {
         const storedRectangles = JSON.parse(localStorage.getItem(imageUrl)) || {};
         const localStorageContent = JSON.stringify(storedRectangles);
-        console.log(storedRectangles.length + "storedRectangles");
         return storedRectangles[imageUrl] || [];
     };
 

@@ -20,12 +20,18 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         stageRef,
         selectShapes,
     } = useImageStage(rectangles, editorInitialColor, photoId);
+    
+    const listOfColors = JSON.parse(localStorage.getItem('rectangles')) || [];
+    
+    
 
 
-    const initialX = (window.innerWidth * 0.82 - imageDimensions.width) / 2;
-    const initialY = (window.innerHeight - imageDimensions.height) / 2;
+
+    const initialX = (window.innerWidth * 0.82 - imageDimensions.width);
+    const initialY = ( window.innerHeight - imageDimensions.height);
 
     const [drawing, setDrawing] = useState(false);
+
 
 
 
@@ -85,18 +91,65 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             if ((isRectangle(event) || isTransformer(event)) && !drawing) return;
 
             setDrawing(false);
+            const stage = stageRef.current;
+            const pointerPos = stage.getPointerPosition();
+
+            const currentRect = rectanglesToDraw[rectanglesToDraw.length - 1];
+            currentRect.width = pointerPos.x - currentRect.x;
+            currentRect.height = pointerPos.y - currentRect.y;
+
+
 
             setRectangles((prevRectangles) => {
                 if (prevRectangles[prevRectangles.length - 1].x === prevRectangles[prevRectangles.length - 2]?.x && prevRectangles[prevRectangles.length - 1].y === prevRectangles[prevRectangles.length - 2]?.y) {
-                    return prevRectangles.slice(0, prevRectangles.length - 1).filter((rect) => rect.width !== 0 && rect.height !== 0);
+                    const initColor = JSON.parse(localStorage.getItem('rectangles')).filter((rect) => rect.default === true)[0]?.color || editorInitialColor;
+                    prevRectangles[prevRectangles.length - 2].fill = initColor;
+                    prevRectangles[prevRectangles.length - 1].fill = initColor;
+                    return prevRectangles.slice(0, prevRectangles.length - 1);
                 }
-                return prevRectangles.filter((rect) => rect.width !== 0 && rect.height !== 0);
+                return prevRectangles;
+            });
+
+            if (rectanglesToDraw[rectanglesToDraw.length - 1].width === 0 && rectanglesToDraw[rectanglesToDraw.length - 1].height === 0) {
+                selectShapes([]);
+                setRectangles((prevRectangles) => {
+                    const initColor = JSON.parse(localStorage.getItem('rectangles')).filter((rect) => rect.default === true)[0]?.color || editorInitialColor;
+                    
+                    return prevRectangles.slice(0, prevRectangles.length - 1);
+                });
+                return;
             }
-            );
+            selectShapes([rectanglesToDraw[rectanglesToDraw.length - 1].id]);
+
+            handleContextMenu(event);
+
+
+
         };
 
         const stage = stageRef.current;
 
+
+        if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
+            setRectangles(rectanglesToDraw);
+            onRectanglesChange(image.name, rectanglesToDraw);
+        }
+        localStorage.setItem(photoId, JSON.stringify(rectanglesToDraw));
+
+        const handleContextMenu = (e) => {
+            e.evt.preventDefault();
+
+            const pointerPos = stage.getPointerPosition();
+
+            contextMenuPosition.x = pointerPos.x + 320;
+            contextMenuPosition.y = pointerPos.y - 35;
+
+            setContextMenuOpen(true);
+        };
+
+
+
+        stage.on("contextmenu", handleContextMenu);
         stage.on("mousedown", handleMouseDown);
         stage.on("mousemove", handleMouseMove);
         stage.on("mouseup", handleMouseUp);
@@ -105,46 +158,11 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             stage.off("mousedown", handleMouseDown);
             stage.off("mousemove", handleMouseMove);
             stage.off("mouseup", handleMouseUp);
-        };
-    }, [drawing, setRectangles, editorInitialColor, photoId]);
-
-
-
-
-
-    
-    useEffect(() => {
-        if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
-            console.log("rectanglesToDraw123: " + rectanglesToDraw.length);
-            setRectangles(rectanglesToDraw);
-            onRectanglesChange(image.name, rectanglesToDraw);
-        }
-        localStorage.setItem(photoId, JSON.stringify(rectanglesToDraw));
-
-        const stage = stageRef.current;
-
-        const handleContextMenu = (e) => {
-            e.evt.preventDefault();
-
-            const pointerPos = stage.getPointerPosition();
-            console.log("pointerPos: " + pointerPos.x + " " + pointerPos.y);
-
-            contextMenuPosition.x = pointerPos.x + 320;
-            contextMenuPosition.y = pointerPos.y - 35;
-
-            console.log("contextMenuPosition: " + contextMenuPosition.x + " " + contextMenuPosition.y);
-
-            setContextMenuOpen(true);
-        };
-
-        stage.on("contextmenu", handleContextMenu);
-
-        return () => {
             stage.off("contextmenu", handleContextMenu);
         };
 
-    }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
-    
+
+    }, [drawing, setRectangles, editorInitialColor, photoId, rectanglesToDraw, rectangles, onRectanglesChange]);
 
 
 
@@ -174,7 +192,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
     const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
     const [isContextMenuOpen, setContextMenuOpen] = useState(false);
-
     const handleContextMenu = (e) => {
         e.evt.preventDefault();
 
@@ -185,8 +202,26 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         setContextMenuOpen(true);
     };
 
-    const handleCloseContextMenu = () => {
+    const handleCloseContextMenu = (color) => {
         setContextMenuOpen(false);
+        // set initialColor to color
+        // set fill and stroke of selected rectangles to color
+        // set fill and stroke of selected rectangles to initialColor
+
+
+        if (color) {
+            setRectangles((prevRectangles) => {
+                const updatedRectangles = prevRectangles.map((rect) => {
+                    if (selectedIds.includes(rect.id)) {
+                        rect.fill = color;
+                        rect.stroke = color;
+                    }
+                    return rect;
+                });
+                localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+                return updatedRectangles;
+            });
+        }
     };
 
     const handleDeleteContextMenu = () => {
@@ -201,6 +236,20 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
         handleCloseContextMenu();
     };
+
+    const handleColorChange = (color) => {
+        setRectangles((prevRectangles) => {
+            const updatedRectangles = prevRectangles.map((rect) => {
+                if (selectedIds.includes(rect.id)) {
+                    rect.fill = color;
+                    rect.stroke = color;
+                }
+                return rect;
+            });
+            localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+            return updatedRectangles;
+        });
+    }
 
 
     return (
@@ -256,6 +305,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 onClose={handleCloseContextMenu}
                 onDelete={handleDeleteContextMenu}
                 isOpen={isContextMenuOpen}
+                listOfColors={listOfColors}
             />
         </>
     );

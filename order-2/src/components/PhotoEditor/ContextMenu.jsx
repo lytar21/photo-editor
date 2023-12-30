@@ -2,7 +2,7 @@ import React from "react";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 
-const ContextMenu = ({ onClose, onDelete, isOpen, position }) => {
+const ContextMenu = ({ onClose, onDelete, isOpen, position,listOfColors}) => {
     const handleClose = () => {
         onClose();
     };
@@ -12,6 +12,10 @@ const ContextMenu = ({ onClose, onDelete, isOpen, position }) => {
         onClose();
     };
 
+    const handleColorChange = (color) => () => {
+        onClose(color);
+    };
+    
     return (
         <Menu
             id="context-menu"
@@ -19,7 +23,9 @@ const ContextMenu = ({ onClose, onDelete, isOpen, position }) => {
             anchorPosition = {{top: position.y, left: position.x}}
             open={isOpen}
             onClose={handleClose}
-        >
+        >{ JSON.parse(localStorage.getItem('rectangles')).map((color, index) => (
+                <MenuItem key={index} onClick={handleColorChange(color.color)}>{color.name}</MenuItem>
+            ))}
             <MenuItem onClick={handleDelete}>Delete</MenuItem>
         </Menu>
     );

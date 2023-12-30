@@ -13,6 +13,7 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
     const [rectangles, setRectangles] = useState([
         { name: '', color: '#ff0000', default: true }
     ]);
+    localStorage.setItem('rectangles', JSON.stringify(rectangles));
 
     const handleAddRectangle = () => {
         setRectangles([...rectangles, { name: '', color: '#ff0000', default: false }]);
@@ -27,6 +28,7 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
     const handleColorChange = (index, color) => {
         const updatedRectangles = [...rectangles];
         updatedRectangles[index].color = color.hex;
+        localStorage.setItem('rectangles', JSON.stringify(color.hex));
         setRectangles(updatedRectangles);
 
         onColorChange(color.hex);
