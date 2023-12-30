@@ -1,7 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
 import { useImageStage } from "./useImageStage.js";
 import Mark from "./Mark";
+
+import ContextMenu from "./ContextMenu.jsx";
 let k=0;
 
 const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor, rectangles, onRectanglesChange, photoId, onRectanglesExistenceChange }) => {
@@ -14,20 +16,51 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         imageRef,
         stageProps,
         setRectangles,
-    } = useImageStage(rectangles, editorInitialColor, photoId,);
+        selectedIds,
+        stageRef,
+        selectShapes,
+    } = useImageStage(rectangles, editorInitialColor, photoId);
+
 
     const initialX = (window.innerWidth * 0.82 - imageDimensions.width) / 2;
     const initialY = (window.innerHeight - imageDimensions.height) / 2;
 
+
     useEffect(() => {
         console.log("rectanglesAreEqual: " + areRectanglesEqual(rectanglesToDraw, rectangles));
-        console.log("rectanglesToDraw: " + rectanglesToDraw.length + " "+ k++);
+        console.log("rectanglesToDraw: " + rectanglesToDraw.length + " " + k++);
+        console.log("image dimensions: " + imageDimensions.width + " " + imageDimensions.height);
         if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
             setRectangles(rectanglesToDraw);
             onRectanglesChange(image.name, rectanglesToDraw);
         }
         localStorage.setItem(photoId, JSON.stringify(rectanglesToDraw));
+    
+        const stage = stageRef.current;
+    
+        const handleContextMenu = (e) => {
+            e.evt.preventDefault();
+    
+            const pointerPos = stage.getPointerPosition();
+            console.log("pointerPos: " + pointerPos.x + " " + pointerPos.y);
+    
+            contextMenuPosition.x = pointerPos.x + 320;
+            contextMenuPosition.y = pointerPos.y - 35;
+    
+            console.log("contextMenuPosition: " + contextMenuPosition.x + " " + contextMenuPosition.y);
+    
+            setContextMenuOpen(true);
+        };
+    
+        stage.on("contextmenu", handleContextMenu);
+    
+        return () => {
+            stage.off("contextmenu", handleContextMenu);
+        };
+    
     }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
+
+
 
     const areRectanglesEqual = (rectanglesArray1, rectanglesArray2) => {
         const areIndividualRectanglesEqual = (rect1, rect2) => {
@@ -51,13 +84,49 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         return true;
     };
 
+
+
+    const [contextMenuPosition, setContextMenuPosition] = useState({ x:0, y: 0 });
+    const [isContextMenuOpen, setContextMenuOpen] = useState(false);
+
+    const handleContextMenu = (e) => {
+        e.evt.preventDefault();
+
+        const stage = stageRef.current;
+        const pointerPos = stage.getPointerPosition();
+        console.log("pointerPos: " + pointerPos.x + " " + pointerPos.y);
+
+
+        console.log("contextMenuPosition: " + contextMenuPosition.x + " " + contextMenuPosition.y);
+
+        setContextMenuOpen(true);
+    };
+
+    const handleCloseContextMenu = () => {
+        setContextMenuOpen(false);
+    };
+
+    const handleDeleteContextMenu = () => {
+        // Delete the selected rectangles
+        setRectangles((prevRectangles) => {
+            const updatedRectangles = prevRectangles.filter(
+                (rect) => !selectedIds.includes(rect.id)
+            );
+            selectShapes([]);
+            localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+            return updatedRectangles;
+        });
+
+        handleCloseContextMenu();
+    };
+
     return (
         <>
             <div>
                 <Stage
                     {...stageProps}
-                    width={window.innerWidth * 0.82}
-                    height={window.innerHeight}
+                    width={imageDimensions.width}
+                    height={imageDimensions.height}
                 >
                     <Layer ref={layerRef}>
                         <Image
@@ -68,8 +137,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                             y={initialY}
                         />
 
-                        {rectanglesToDraw.filter((rect) => rect.photoId === photoId).
-                        map((rect, i) => (
+                        {rectanglesToDraw.filter((rect) => rect.photoId === photoId).map((rect, i) => (
                             <Mark
                                 imageRef={imageRef}
                                 key={i}
@@ -100,7 +168,13 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                     </Layer>
                 </Stage>
             </div>
-        </>
+            <ContextMenu
+                position={contextMenuPosition}
+                onClose={handleCloseContextMenu}
+                onDelete={handleDeleteContextMenu}
+                isOpen={isContextMenuOpen}
+            />
+            </>
     );
 };
 

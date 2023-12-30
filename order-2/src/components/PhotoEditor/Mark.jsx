@@ -19,15 +19,15 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       (y >= imageRect.y) &&
       ((x + width) <= (imageRect.x + imageRect.width)) &&
       ((y + height) <= (imageRect.y + imageRect.height));
-      console.log("rectangleWithinImage: " + rectangleWithinImage);
-      lastRectPositionWithinImage.x = x;
-      lastRectPositionWithinImage.y = y;
+    console.log("rectangleWithinImage: " + rectangleWithinImage);
+    lastRectPositionWithinImage.x = x;
+    lastRectPositionWithinImage.y = y;
 
     if (!rectangleWithinImage) {
       setLastRectPositionWithinImage({ x, y });
     }
   };
-  
+
 
   return (
     <Rect
@@ -54,12 +54,12 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       onDragStart={onDrag}
       onDragMove={onDrag}
       onDragEnd={() => {
-           onChange({
-             ...shapeProps,
-             x: lastRectPositionWithinImage.x,
-             y: lastRectPositionWithinImage.y,
-           });
-        }}
+        onChange({
+          ...shapeProps,
+          x: lastRectPositionWithinImage.x,
+          y: lastRectPositionWithinImage.y,
+        });
+      }}
       onTransformEnd={(e) => {
         const node = shapeRef.current;
         const scaleX = node.scaleX();

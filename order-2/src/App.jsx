@@ -27,7 +27,6 @@ const App = () => {
     const [rectanglesToDraw, setRectanglesToDraw] = useState([]);
     const [photoId, setPhotoId] = useState(null);
     const [selectedFilter, setSelectedFilter] = useState("all");
-    const imageRectanglesLength = imageRectangles.length;
 
     useEffect(() => {
         const results = images.filter((image) => {
@@ -253,10 +252,8 @@ const App = () => {
                 </Select>
 
 
-
-                <Box sx={{ height: '100%', overflowY: 'auto', marginTop: '20px', marginLeft: '30px', }}>
+                <Box sx={{ height: '65%', overflowY: 'auto', marginTop: '20px', marginLeft: '30px' }}>
                     {
-                        // we will filter the results by the selected filter imageRectangles[selectedImage] || []
 
                         searchResults.map((uploadedImage, index) => (
                             <Button

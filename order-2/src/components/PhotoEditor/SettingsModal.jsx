@@ -43,45 +43,43 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
     return (
         <Modal open={open} onClose={onClose}>
             <Box
-                sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}
+                sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, height : '96%', bgcolor: 'background.paper', boxShadow: 24, p: 4 }}
             >
                 <Typography variant="h6" component="div" gutterBottom>
                     Rectangle Settings
                 </Typography>
 
-                {rectangles.map((rect, index) => (
-                    <div key={index} style={{ marginBottom: '20px' }}>
-                        <TextField
-                            label={'Name'}
-                            value={rect.name}
-                            onChange={(e) => handleInputChange(index, 'name', e.target.value)}
-                            style={{ marginBottom: '10px', display: 'block' }}
-                        />
-
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                            <ColorPicker
-                                color={rect.color}
-                                onChange={(color) => handleColorChange(index, color)}
-                                style={{ marginRight: '10px' }}
+                <div style={{ maxHeight: '93%', overflowY: 'auto' }}>
+                    {rectangles.map((rect, index) => (
+                        <div key={index} style={{ marginBottom: '20px' }}>
+                            <TextField
+                                label={'Name'}
+                                value={rect.name}
+                                onChange={(e) => handleInputChange(index, 'name', e.target.value)}
+                                style={{ marginBottom: '10px', display: 'block' }}
                             />
 
-                           
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                <ColorPicker
+                                    color={rect.color}
+                                    onChange={(color) => handleColorChange(index, color)}
+                                    style={{ marginRight: '10px' }}
+                                />
+                            </div>
+
+                            <RadioGroup
+                                row
+                                aria-label={`Rectangle ${index + 1}`}
+                                name={`rectangle${index + 1}`}
+                                value={rect.default.toString()}
+                                onChange={() => handleRadioChange(index)}
+                                style={{ display: 'flex' }}
+                            >
+                                <FormControlLabel value="true" control={<Radio />} label="Default" />
+                            </RadioGroup>
                         </div>
-
-                        <RadioGroup
-                            row
-                            aria-label={`Rectangle ${index + 1}`}
-                            name={`rectangle${index + 1}`}
-                            value={rect.default.toString()}
-                            onChange={() => handleRadioChange(index)}
-                            style={{ display: 'flex' }}
-                        >
-                            <FormControlLabel value="true" control={<Radio />} label="Default" />
-                        </RadioGroup>
-
-                    </div>
-
-                ))}
+                    ))}
+                </div>
 
                 <Button variant="contained" onClick={handleAddRectangle} style={{ marginRight: '10px' }}>
                     +
@@ -90,9 +88,7 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
                 <Button variant="contained" onClick={onClose}>
                     Close
                 </Button>
-
             </Box>
-            
         </Modal>
     );
 };

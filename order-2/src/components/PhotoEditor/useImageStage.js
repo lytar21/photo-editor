@@ -6,12 +6,30 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         x: 0,
         y: 0,
     });
-
+    const [selectedIds, selectShapes] = useState([]);
     const [newRectangle, setNewRectangle] = useState([]);
+    const [contextMenuOpen, setContextMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleContextMenu = (e) => {
+            e.evt.preventDefault();
+
+            if (selectedIds.length > 0) {
+                setContextMenuOpen(true);
+            }
+        };
+
+        const stage = stageRef.current;
+        stage.on("contextmenu", handleContextMenu);
+
+        return () => {
+            stage.off("contextmenu", handleContextMenu);
+        };
+    }, [selectedIds]);
+
 
     const [rectangles, setRectangles] = useState(initialRectangles || []);
     const rectanglesToDraw = rectangles.length>0? rectangles.filter((rect) => rect.photoId === photoId) : [];
-    const [selectedIds, selectShapes] = useState([]);
     const trRef = useRef();
     const selectionRectRef = useRef();
     const selection = useRef({
@@ -39,12 +57,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     
     const calculateRelativePosition = (coordinate, scale) => coordinate / scale;
     const calculateRelativeSize = (size, scale) => size / scale;
-
     useEffect(() => {
-        const handleContextMenu = (e) => {
-            e.evt.preventDefault();
-
-            if (selectedIds.length > 0) {
+        const handleKeyDown = (e) => {
+            if (e.keyCode === 46 && selectedIds.length > 0) {
+                // DEL key is pressed
                 // Delete selected rectangles
                 setRectangles((prevRectangles) => {
                     const updatedRectangles = prevRectangles.filter(
@@ -55,31 +71,11 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                 });
             }
         };
-
-        const handleKeyDown = (e) => {
-            console.log("key pressed");
-            if (e.keyCode === 46 && selectedIds.length > 0) {
-                // DEL key is pressed
-                // Delete selected rectangles
-                setRectangles((prevRectangles) => {
-                    const updatedRectangles = prevRectangles.length>0 ? prevRectangles.filter(
-                        (rect) => !selectedIds.includes(rect.id)
-                    ): [];
-                    selectShapes([]);
-                    // delete rectangles from the local storage
-                    localStorage[photoId] = JSON.stringify(updatedRectangles);
-                    return updatedRectangles;
-                });
-            }
-        };
-
+    
         const stage = stageRef.current;
-        stage.on("contextmenu", handleContextMenu);
-
         document.addEventListener("keydown", handleKeyDown);
-
+    
         return () => {
-            stage.off("contextmenu", handleContextMenu);
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [selectedIds]);
@@ -249,6 +245,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             x: stage.x,
             y: stage.y,
         },
+        selectedIds,
+        stageRef,
+        contextMenuOpen,
+        selectShapes,
     };
 }
 
@@ -258,3 +258,5 @@ const isRectangle = (e) => {
 const isTransformer = (e) => {
     return e.target.findAncestor("Transformer");
 };
+
+
