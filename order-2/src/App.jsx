@@ -64,42 +64,42 @@ const App = () => {
     const handleChangeImage = (e) => {
         const file = e.target.files[0];
         setImageFile(file);
-
+    
         if (file) {
             const reader = new FileReader();
-
+    
             reader.onload = (e) => {
                 const img = document.createElement('img');
                 img.src = e.target.result;
-
+    
                 img.onload = () => {
                     let width, height;
                     const imageWidth = img.width;
                     const imageHeight = img.height;
-
+    
                     const stageHeight = window.innerHeight;
                     const stageWidth = window.innerWidth * 0.82;
-
-                    if (imageWidth >= imageHeight) {
+    
+                    if (imageWidth > imageHeight) {
                         width = stageWidth;
-                        height = (imageHeight * width) / imageWidth;
+                        height = (imageHeight / imageWidth) * stageWidth;
                     } else {
                         height = stageHeight;
-                        width = (imageWidth * height) / imageHeight;
+                        width = (imageWidth / imageHeight) * stageHeight;
                     }
-
+    
                     const newImage = {
                         url: URL.createObjectURL(file),
                         dimensions: { width, height },
                         fileName: file.name,
                     };
-
+    
                     setImages((prevImages) => [...prevImages, newImage]);
                     setImageDimensions({ width, height });
                     handleRectanglesInitialization(newImage.url);
                 };
             };
-
+    
             reader.readAsDataURL(file);
         }
     };

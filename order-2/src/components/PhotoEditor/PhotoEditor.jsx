@@ -26,6 +26,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
     const initialY = (window.innerHeight - imageDimensions.height) / 2;
 
     const [drawing, setDrawing] = useState(false);
+    console.log("dimensions: " + imageDimensions.width + " " + imageDimensions.height);
 
 
 
@@ -68,14 +69,14 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 const stageScaleX = stage.scaleX();
                 const stageScaleY = stage.scaleY();
 
-                if (isRectangle(event) || isTransformer(event)) return;
+                // if (isRectangle(event) || isTransformer(event)) return;
 
                 setRectangles((prevRectangles) => {
                     const currentRect = prevRectangles[prevRectangles.slice().length - 1];
                     currentRect.width = (x - stage.x()) / stageScaleX - currentRect.x;
 
                     currentRect.height = (y - stage.y()) / stageScaleY - currentRect.y;
-                    
+
                     return prevRectangles;
                 });
             }
@@ -143,6 +144,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         };
 
     }, [rectanglesToDraw, photoId, rectangles, setRectangles, onRectanglesChange]);
+    
 
 
 
@@ -202,6 +204,8 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
         handleCloseContextMenu();
     };
+
+    console.log("imageDimensions:123123 " + photoId.width + " " + photoId.height  + " " + photoId);
 
     return (
         <>

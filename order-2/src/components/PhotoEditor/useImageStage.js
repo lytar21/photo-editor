@@ -29,6 +29,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
 
     const [rectangles, setRectangles] = useState(initialRectangles || []);
+
+    
     const rectanglesToDraw = rectangles.length>0? rectangles.filter((rect) => rect.photoId === photoId) : [];
     const trRef = useRef();
     const selectionRectRef = useRef();
@@ -44,6 +46,9 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const imageRef = useRef();
 
     const [imageUrl, setImageUrl] = useState("https://source.unsplash.com/random/300x300?sky");
+
+
+
 
     const isWithinImageBounds = (x, y) => {
         const imageRect = imageRef.current.getClientRect();
@@ -67,6 +72,29 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                         (rect) => !selectedIds.includes(rect.id)
                     );
                     selectShapes([]);
+                    return updatedRectangles;
+                });
+            }
+            // if ALT key is pressed then copy the selected rectangles
+            if (e.key === "Alt") {
+                console.log("ALT key is pressed");
+                // Create new rectangles as copies of the selected ones
+                setRectangles((prevRectangles) => {
+                    const selectedRectangles = prevRectangles.filter((rect) =>
+                        selectedIds.includes(rect.id)
+                    );
+    
+                    const updatedRectangles = [
+                        ...prevRectangles,
+                        ...selectedRectangles.map((selectedRect) => ({
+                            ...selectedRect,
+                            id: Date.now().toString(), // Generate new id for the copied rectangle
+                            key: Date.now().toString(),
+                            x: selectedRect.x + 100,
+                            y: selectedRect.y + 100,
+                        })),
+                    ];
+    
                     return updatedRectangles;
                 });
             }
@@ -151,20 +179,15 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         }));
       };
 
-      // now we'll handle the image movement while central mouse button is pressed
-    const handleMiddleMouse = (e) => {
-        e.evt.preventDefault();
-        const stage = e.target.getStage();
-        const oldX = stage.x();
-        const oldY = stage.y();
-        const { x, y } = stage.getPointerPosition();
-        setStage((prevStage) => ({
-          ...prevStage,
-          x: x - oldX,
-          y: y - oldY,
-        }));
-      };
-      
+
+    const handleWidth = (e) => {
+        return e.target.getClientRect().width;
+    };
+
+    const handleHeight = (e) => {
+        return e.target.getClientRect().height;
+    };
+
 
     const checkDeselect = (e) => {
         const clickedOnEmpty = e.target === e.target.getStage();
