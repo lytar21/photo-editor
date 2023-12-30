@@ -36,14 +36,17 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
             const { x, y } = event.target.getStage().getPointerPosition();
             const stage = stageRef.current;
+            const stageScaleX = stage.scaleX();
+            const stageScaleY = stage.scaleY();
+
 
             if (drawing) return;
 
             setRectangles((prevRectangles) => [
                 ...prevRectangles,
                 {
-                    x: x - stage.x(),
-                    y: y - stage.y(),
+                    x: (x - stage.x()) / stageScaleX,
+                    y: (y - stage.y()) / stageScaleY,
                     width: 0,
                     height: 0,
                     key: Date.now().toString(),
@@ -62,13 +65,17 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             if (drawing) {
                 const { x, y } = event.target.getStage().getPointerPosition();
                 const stage = stageRef.current;
+                const stageScaleX = stage.scaleX();
+                const stageScaleY = stage.scaleY();
 
                 if (isRectangle(event) || isTransformer(event)) return;
 
                 setRectangles((prevRectangles) => {
                     const currentRect = prevRectangles[prevRectangles.slice().length - 1];
-                    currentRect.width = x - stage.x() - currentRect.x;
-                    currentRect.height = y - stage.y() - currentRect.y;
+                    currentRect.width = (x - stage.x()) / stageScaleX - currentRect.x;
+
+                    currentRect.height = (y - stage.y()) / stageScaleY - currentRect.y;
+                    
                     return prevRectangles;
                 });
             }
