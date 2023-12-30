@@ -252,10 +252,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     };
 }
 
-const isRectangle = (e) => {
+export const isRectangle = (e) => {
     return e.target.hasName("rectangle");
 };
-const isTransformer = (e) => {
+export const isTransformer = (e) => {
     return e.target.findAncestor("Transformer");
 };
 
