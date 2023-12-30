@@ -26,7 +26,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
     const initialY = (window.innerHeight - imageDimensions.height) / 2;
 
     const [drawing, setDrawing] = useState(false);
-    console.log("dimensions: " + imageDimensions.width + " " + imageDimensions.height);
 
 
 
@@ -86,8 +85,12 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             if ((isRectangle(event) || isTransformer(event)) && !drawing) return;
 
             setDrawing(false);
+
             setRectangles((prevRectangles) => {
-                return prevRectangles.slice(0, prevRectangles.length - 1).filter((image) => image.width !== 0 && image.height !== 0);
+                if (prevRectangles[prevRectangles.length - 1].x === prevRectangles[prevRectangles.length - 2]?.x && prevRectangles[prevRectangles.length - 1].y === prevRectangles[prevRectangles.length - 2]?.y) {
+                    return prevRectangles.slice(0, prevRectangles.length - 1).filter((rect) => rect.width !== 0 && rect.height !== 0);
+                }
+                return prevRectangles.filter((rect) => rect.width !== 0 && rect.height !== 0);
             }
             );
         };
@@ -111,9 +114,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
     
     useEffect(() => {
-        console.log("rectanglesAreEqual: " + areRectanglesEqual(rectanglesToDraw, rectangles));
-        console.log("rectanglesToDraw: " + rectanglesToDraw.length + " " + k++);
-        console.log("image dimensions: " + imageDimensions.width + " " + imageDimensions.height);
         if (!areRectanglesEqual(rectanglesToDraw, rectangles)) {
             console.log("rectanglesToDraw123: " + rectanglesToDraw.length);
             setRectangles(rectanglesToDraw);
@@ -180,10 +180,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
         const stage = stageRef.current;
         const pointerPos = stage.getPointerPosition();
-        console.log("pointerPos: " + pointerPos.x + " " + pointerPos.y);
 
-
-        console.log("contextMenuPosition: " + contextMenuPosition.x + " " + contextMenuPosition.y);
 
         setContextMenuOpen(true);
     };
@@ -205,7 +202,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         handleCloseContextMenu();
     };
 
-    console.log("imageDimensions:123123 " + photoId.width + " " + photoId.height  + " " + photoId);
 
     return (
         <>
