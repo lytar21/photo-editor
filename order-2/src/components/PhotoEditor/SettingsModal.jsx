@@ -37,7 +37,12 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
             ...rect,
             default: i === index
         }));
+    
         setRectangles(updatedRectangles);
+    
+        if (updatedRectangles[index].default) {
+            onColorChange(updatedRectangles[index].color);
+        }
     };
 
     return (

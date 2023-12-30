@@ -87,7 +87,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
             setDrawing(false);
             setRectangles((prevRectangles) => {
-                return prevRectangles.slice(0, prevRectangles.length - 1);
+                return prevRectangles.slice(0, prevRectangles.length - 1).filter((image) => image.width !== 0 && image.height !== 0);
             }
             );
         };

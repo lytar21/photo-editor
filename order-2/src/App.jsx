@@ -40,7 +40,7 @@ const App = () => {
             }
         }
         );
-        setSearchResults(results);
+        setSearchResults(results.filter((image) => image.width !== 0 && image.height !== 0));
     }, [searchText, images, selectedFilter]);
 
     const handleOpen = () => {
@@ -106,16 +106,13 @@ const App = () => {
 
     const handleRectanglesChange = (photoId, newRectangles) => {
         setImageRectangles((prevImageRectangles) => {
-            console.log("prev " + prevImageRectangles.length);
 
             const updatedRectangles = {
                 ...prevImageRectangles,
                 [photoId]: newRectangles,
             };
-            console.log("updated " + updatedRectangles.length);
 
             const allRectangles = Object.values(updatedRectangles).flat();
-            console.log("all " + allRectangles.filter((rect) => rect.photoId === photoId).length);
             setRectanglesToDraw(allRectangles);
 
             return updatedRectangles;

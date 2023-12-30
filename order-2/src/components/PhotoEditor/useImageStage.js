@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+let k = 0;
+
 export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const [stage, setStage] = useState({
         scale: 1,
@@ -62,6 +64,52 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     
     const calculateRelativePosition = (coordinate, scale) => coordinate / scale;
     const calculateRelativeSize = (size, scale) => size / scale;
+
+    const [wheelIsPressed, setWheelIsPressed] = useState(false);
+    const [wheelPosition, setWheelPosition] = useState({ x: 0, y: 0 });
+
+
+    useEffect(() => {
+        
+        const handleWheelpress = (e) => {
+            e.evt.preventDefault();
+            if (e.evt.button === 1) {
+                setWheelIsPressed(true);
+                setWheelPosition({ x: e.evt.clientX, y: e.evt.clientY });
+            }
+        };
+
+        const handleWheelrelease = (e) => {
+            e.evt.preventDefault();
+            if (e.evt.button === 1) {
+                setWheelIsPressed(false);
+            }
+        }
+
+        const handleWheelmove = (e) => {
+            e.evt.preventDefault();
+            if (wheelIsPressed) {
+                const stage = stageRef.current;
+                stage.x(stage.x() + e.evt.clientX - wheelPosition.x);
+                stage.y(stage.y() + e.evt.clientY - wheelPosition.y);
+                setWheelPosition({ x: e.evt.clientX, y: e.evt.clientY });
+            }
+        }
+
+        const stage = stageRef.current;
+        stage.on("mousedown", handleWheelpress);
+        stage.on("mouseup", handleWheelrelease);
+        stage.on("mousemove", handleWheelmove);
+
+        return () => {
+            stage.off("mousedown", handleWheelpress);
+            stage.off("mouseup", handleWheelrelease);
+            stage.off("mousemove", handleWheelmove);
+        }
+
+    }, [wheelIsPressed, wheelPosition]);
+
+
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.keyCode === 46 && selectedIds.length > 0) {
@@ -77,8 +125,6 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             }
             // if ALT key is pressed then copy the selected rectangles
             if (e.key === "Alt") {
-                console.log("ALT key is pressed");
-                // Create new rectangles as copies of the selected ones
                 setRectangles((prevRectangles) => {
                     const selectedRectangles = prevRectangles.filter((rect) =>
                         selectedIds.includes(rect.id)
@@ -88,8 +134,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                         ...prevRectangles,
                         ...selectedRectangles.map((selectedRect) => ({
                             ...selectedRect,
-                            id: Date.now().toString(), // Generate new id for the copied rectangle
-                            key: Date.now().toString(),
+                            id: Date.now().toString() + k++,
+                            key: Date.now().toString() + k++,
                             x: selectedRect.x + 100,
                             y: selectedRect.y + 100,
                         })),
@@ -97,6 +143,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     
                     return updatedRectangles;
                 });
+
             }
         };
     
@@ -111,6 +158,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     const handleMouseDown = (event) => {
         if (isRectangle(event) || isTransformer(event)) return;
+
+        if (event.evt.button !== 0) return;
+
+        
 
         const { x, y } = event.target.getStage().getPointerPosition();
 
@@ -135,6 +186,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     };
 
     const handleMouseMove = (event) => {
+        if (event.evt.button !== 0) return;
         if (newRectangle.length === 1) {
             const { x, y } = event.target.getStage().getPointerPosition();
             const updatedRect = { ...newRectangle[0] };
@@ -159,6 +211,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     };
 
 
+
+
     const handleWheel = (e) => {
         e.evt.preventDefault();
       
@@ -178,6 +232,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
           y: (stage.getPointerPosition().y / newScale - mousePointTo.y) * newScale,
         }));
       };
+
+
 
 
     const handleWidth = (e) => {
