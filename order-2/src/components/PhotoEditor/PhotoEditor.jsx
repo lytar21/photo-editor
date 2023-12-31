@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Stage, Layer, Rect, Transformer, Image } from "react-konva";
 import { useImageStage, isRectangle, isTransformer } from "./useImageStage.js";
 import Mark from "./Mark";
+import axios from "axios";
 
 import ContextMenu from "./ContextMenu.jsx";
 let k = 0;
@@ -21,7 +22,15 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         selectShapes,
     } = useImageStage(rectangles, editorInitialColor, photoId);
     
-    const listOfColors = JSON.parse(localStorage.getItem('rectangles')) || [];
+    const listOfColors = JSON.parse(localStorage.getItem('rectangles'));
+    // const listOfColors = JSON.parse(axios.get('http://localhost:5001/mark/colors').then((response) => {
+    //     return response.data;
+    // }).catch((error) => {
+    //     console.log(error);
+    // }
+    // ));
+    
+    
     
     
 
@@ -44,6 +53,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             const stage = stageRef.current;
             const stageScaleX = stage.scaleX();
             const stageScaleY = stage.scaleY();
+            console.log(stageScaleX, stageScaleY);
 
 
             if (drawing) return;
@@ -92,19 +102,19 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
             setDrawing(false);
             const stage = stageRef.current;
-            const pointerPos = stage.getPointerPosition();
+            const pointerPos = event.target.getStage().getPointerPosition();
 
             const currentRect = rectanglesToDraw[rectanglesToDraw.length - 1];
-            currentRect.width = pointerPos.x - currentRect.x;
-            currentRect.height = pointerPos.y - currentRect.y;
+            // console.log(currentRect.width, currentRect.height + " " + "currentRect.x, currentRect.y");
+            // // currentRect.width = pointerPos.x - currentRect.x;
+            // // currentRect.height = pointerPos.y - currentRect.y;
+
+            // console.log(currentRect.width, currentRect.height + " " + "edited.x, currentRect.y");
 
 
 
             setRectangles((prevRectangles) => {
                 if (prevRectangles[prevRectangles.length - 1].x === prevRectangles[prevRectangles.length - 2]?.x && prevRectangles[prevRectangles.length - 1].y === prevRectangles[prevRectangles.length - 2]?.y) {
-                    const initColor = JSON.parse(localStorage.getItem('rectangles')).filter((rect) => rect.default === true)[0]?.color || editorInitialColor;
-                    prevRectangles[prevRectangles.length - 2].fill = initColor;
-                    prevRectangles[prevRectangles.length - 1].fill = initColor;
                     return prevRectangles.slice(0, prevRectangles.length - 1);
                 }
                 return prevRectangles;
@@ -113,8 +123,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             if (rectanglesToDraw[rectanglesToDraw.length - 1].width === 0 && rectanglesToDraw[rectanglesToDraw.length - 1].height === 0) {
                 selectShapes([]);
                 setRectangles((prevRectangles) => {
-                    const initColor = JSON.parse(localStorage.getItem('rectangles')).filter((rect) => rect.default === true)[0]?.color || editorInitialColor;
-                    
                     return prevRectangles.slice(0, prevRectangles.length - 1);
                 });
                 return;
@@ -122,9 +130,6 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             selectShapes([rectanglesToDraw[rectanglesToDraw.length - 1].id]);
 
             handleContextMenu(event);
-
-
-
         };
 
         const stage = stageRef.current;
@@ -135,6 +140,22 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             onRectanglesChange(image.name, rectanglesToDraw);
         }
         localStorage.setItem(photoId, JSON.stringify(rectanglesToDraw));
+        // axios(
+        //     {
+        //         method: 'post',
+        //         url: 'http://localhost:5001/mark/create',
+        //         //const {x, y, width, height, settings_id, photo_id}
+        //         data: {
+        //             x: rectanglesToDraw.map((rect) => rect.x),
+        //             y: rectanglesToDraw.map((rect) => rect.y),
+        //             width: rectanglesToDraw.map((rect) => rect.width),
+
+        //             height: rectanglesToDraw.map((rect) => rect.height),
+        //             settings_id: 1,
+        //             photo_id: rectanglesToDraw.map((rect) => rect.photoId),
+        //         }
+        //     }
+        // );
 
         const handleContextMenu = (e) => {
             e.evt.preventDefault();
@@ -219,6 +240,16 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                     return rect;
                 });
                 localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+                // axios(
+                //     {
+                //         method: 'post',
+                //         url: 'http://localhost:5001/mark',
+                //         data: {
+                //             rectangles: updatedRectangles,
+                //             photoId: photoId,
+                //         }
+                //     }
+                // )
                 return updatedRectangles;
             });
         }
@@ -231,6 +262,16 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             );
             selectShapes([]);
             localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+            axios(  
+                {
+                    method: 'post',
+                    url: 'http://localhost:5001/mark',
+                    data: {
+                        rectangles: updatedRectangles,
+                        photoId: photoId,
+                    }
+                }
+            )
             return updatedRectangles;
         });
 
@@ -247,6 +288,17 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 return rect;
             });
             localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
+            axios(
+                {
+                    method: 'post',
+                    url: 'http://localhost:5001/mark',
+                    data: {
+                        rectangles: updatedRectangles,
+                        photoId: photoId,
+                    }
+                }
+            )
+
             return updatedRectangles;
         });
     }
