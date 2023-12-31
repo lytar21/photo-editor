@@ -8,12 +8,46 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ColorPicker from 'react-color';
+import axios from 'axios';
 
 const SettingsModal = ({ open, onClose, onColorChange }) => {
     const [rectangles, setRectangles] = useState([
         { name: '', color: '#ff0000', default: true }
     ]);
     localStorage.setItem('rectangles', JSON.stringify(rectangles));
+    // rectangles.map((rect, index) => (
+    //     axios.post('http://localhost:5002/colors/create', {
+    //         name: rect.name,
+    //         hex: rect.color,
+    //     }).then(res => {
+    //         console.log(res.data);
+    //     }).catch(err => {
+    //         console.log(err);
+    //     })
+    // ));
+    // axios.get('http://localhost:5002/colors/findAll').then(res => {
+    //     console.log(res.data);
+    // }).catch(err => {
+    //     console.log(err);
+    // }
+    // );
+
+    // axios.post('http://localhost:5001/settings/create', {
+    //   name: 'default',
+    //   color : '#000000',
+    // }).then(res => {
+    //   console.log(res.data);
+    // }).catch(err => {
+    //   console.log(err);
+    // });
+
+    // axios.get('http://localhost:5001/settings/findAll').then(res => {
+    //   console.log(res.data);
+    // }).catch(err => {
+    //   console.log(err);
+    // }
+    // );
+
 
     const handleAddRectangle = () => {
         setRectangles([...rectangles, { name: '', color: '#ff0000', default: false }]);

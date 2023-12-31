@@ -4,6 +4,7 @@ import { useImageStage, isRectangle, isTransformer } from "./useImageStage.js";
 import Mark from "./Mark";
 import axios from "axios";
 
+
 import ContextMenu from "./ContextMenu.jsx";
 let k = 0;
 
@@ -22,19 +23,15 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         selectShapes,
     } = useImageStage(rectangles, editorInitialColor, photoId);
     
-    const listOfColors = JSON.parse(localStorage.getItem('rectangles'));
-    // const listOfColors = JSON.parse(axios.get('http://localhost:5001/mark/colors').then((response) => {
+    // const listOfColors = JSON.parse(axios.get(`${process.env.URL}/colors/findAll`).then((response) => {
     //     return response.data;
     // }).catch((error) => {
     //     console.log(error);
     // }
     // ));
-    
-    
-    
-    
+    // console.log(listOfColors);
 
-
+    const listOfColors = JSON.parse(localStorage.getItem('rectangles'));
 
     const initialX = (window.innerWidth * 0.82 - imageDimensions.width);
     const initialY = ( window.innerHeight - imageDimensions.height);
@@ -120,6 +117,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 return prevRectangles;
             });
 
+
             if (rectanglesToDraw[rectanglesToDraw.length - 1].width === 0 && rectanglesToDraw[rectanglesToDraw.length - 1].height === 0) {
                 selectShapes([]);
                 setRectangles((prevRectangles) => {
@@ -127,9 +125,10 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 });
                 return;
             }
-            selectShapes([rectanglesToDraw[rectanglesToDraw.length - 1].id]);
 
-            handleContextMenu(event);
+            // if there is more than one color, open context menu
+            if (JSON.parse(localStorage.getItem('rectangles')).length > 1) {
+                handleContextMenu(event);}
         };
 
         const stage = stageRef.current;
@@ -143,7 +142,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
         // axios(
         //     {
         //         method: 'post',
-        //         url: 'http://localhost:5001/mark/create',
+        //         url: `${process.env.URL}/mark/create`,
         //         //const {x, y, width, height, settings_id, photo_id}
         //         data: {
         //             x: rectanglesToDraw.map((rect) => rect.x),
@@ -243,7 +242,7 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 // axios(
                 //     {
                 //         method: 'post',
-                //         url: 'http://localhost:5001/mark',
+                //         url: `${process.env.URL}/mark`,
                 //         data: {
                 //             rectangles: updatedRectangles,
                 //             photoId: photoId,
@@ -262,16 +261,16 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
             );
             selectShapes([]);
             localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
-            axios(  
-                {
-                    method: 'post',
-                    url: 'http://localhost:5001/mark',
-                    data: {
-                        rectangles: updatedRectangles,
-                        photoId: photoId,
-                    }
-                }
-            )
+            // axios(  
+            //     {
+            //         method: 'post',
+            //         url: `${process.env.URL}/mark`,
+            //         data: {
+            //             rectangles: updatedRectangles,
+            //             photoId: photoId,
+            //         }
+            //     }
+            // )
             return updatedRectangles;
         });
 
@@ -288,16 +287,16 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
                 return rect;
             });
             localStorage.setItem(photoId, JSON.stringify(updatedRectangles));
-            axios(
-                {
-                    method: 'post',
-                    url: 'http://localhost:5001/mark',
-                    data: {
-                        rectangles: updatedRectangles,
-                        photoId: photoId,
-                    }
-                }
-            )
+            // axios(
+            //     {
+            //         method: 'post',
+            //         url: `${process.env.URL}/mark`,
+            //         data: {
+            //             rectangles: updatedRectangles,
+            //             photoId: photoId,
+            //         }
+            //     }
+            // )
 
             return updatedRectangles;
         });

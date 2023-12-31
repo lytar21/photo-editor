@@ -295,6 +295,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     }, [selectedIds]);
 
     const handleChangeImage = (newImageUrl) => {
+        selectShapes([]);
         setImageUrl(newImageUrl);
     };
 

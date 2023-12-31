@@ -7,8 +7,11 @@ import PhotoEditor from "./components/PhotoEditor/PhotoEditor";
 import { Box, TextField, Select, MenuItem } from "@mui/material";
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import axios from 'axios';
 
 import SettingsModal from './components/PhotoEditor/SettingsModal.jsx';
+
+
 
 const App = () => {
     const [images, setImages] = useState([]);
@@ -35,6 +38,10 @@ const App = () => {
                 return res;
             } else if (selectedFilter === "withoutAnnotations") {
                 return res && localStorage.getItem(image.url) === null || localStorage.getItem(image.url) === "[]";
+                // return res && axios.get(`${process.env.URL}/mark/findById${image.url}`).then(res => {
+                //     return res.data.length === 0;
+                // }
+                // );
             } else if (selectedFilter === "withAnnotations") {
                 return res && localStorage.getItem(image.url) !== null && localStorage.getItem(image.url) !== "[]";
             }
@@ -62,6 +69,9 @@ const App = () => {
     };
 
     const handleChangeImage = (e) => {
+        
+        setRectangles([]);
+        setSelectedImageRectangles([]);
         const file = e.target.files[0];
         setImageFile(file);
     
