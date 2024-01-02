@@ -30,6 +30,7 @@ const App = () => {
     const [rectanglesToDraw, setRectanglesToDraw] = useState([]);
     const [photoId, setPhotoId] = useState(null);
     const [selectedFilter, setSelectedFilter] = useState("all");
+    const [unselectAll, setUnselectAll] = useState(false);
 
     useEffect(() => {
         const results = images.filter((image) => {
@@ -69,27 +70,27 @@ const App = () => {
     };
 
     const handleChangeImage = (e) => {
-        
+
         setRectangles([]);
         setSelectedImageRectangles([]);
         const file = e.target.files[0];
         setImageFile(file);
-    
+
         if (file) {
             const reader = new FileReader();
-    
+
             reader.onload = (e) => {
                 const img = document.createElement('img');
                 img.src = e.target.result;
-    
+
                 img.onload = () => {
                     let width, height;
                     const imageWidth = img.width;
                     const imageHeight = img.height;
-    
+
                     const stageHeight = window.innerHeight;
                     const stageWidth = window.innerWidth * 0.82;
-    
+
                     if (imageWidth > imageHeight) {
                         width = stageWidth;
                         height = (imageHeight / imageWidth) * stageWidth;
@@ -97,26 +98,25 @@ const App = () => {
                         height = stageHeight;
                         width = (imageWidth / imageHeight) * stageHeight;
                     }
-    
+
                     const newImage = {
                         url: URL.createObjectURL(file),
                         dimensions: { width, height },
                         fileName: file.name,
                     };
-    
+
                     setImages((prevImages) => [...prevImages, newImage]);
                     setImageDimensions({ width, height });
                     handleRectanglesInitialization(newImage.url);
                 };
             };
-    
+
             reader.readAsDataURL(file);
         }
     };
 
     const handleRectanglesChange = (photoId, newRectangles) => {
         setImageRectangles((prevImageRectangles) => {
-
             const updatedRectangles = {
                 ...prevImageRectangles,
                 [photoId]: newRectangles,
@@ -135,14 +135,14 @@ const App = () => {
             ...prevImageRectangles,
             [newImageUrl]: initialRectangles,
         }));
-        setSelectedImageRectangles(initialRectangles);
+        // setSelectedImageRectangles(initialRectangles);
         setRectanglesToDraw(initialRectangles);
     };
 
 
     useEffect(() => {
         const storedRectangles = loadRectanglesFromLocalStorage(selectedImage);
-        setSelectedImageRectangles(storedRectangles);
+        // setSelectedImageRectangles(storedRectangles);
         setRectanglesToDraw(storedRectangles);
         setRectangles(storedRectangles);
 
@@ -155,16 +155,21 @@ const App = () => {
         return storedRectangles[imageUrl] || [];
     };
 
-    const handleImageChange = (newImageUrl) => {
+    const handleImageChange = (newImageUrl, storedRects) => {
+        setUnselectAll(true);
         setPhotoId(newImageUrl);
         setSelectedImage(newImageUrl);
         setImageUrl(newImageUrl);
-        localStorage.setItem(newImageUrl, JSON.stringify(imageRectangles[newImageUrl] || []));
-
-        const rectanglesForImage = localStorage.getItem(newImageUrl) || [];
-        setRectangles(rectanglesForImage);
-        setRectanglesToDraw(rectanglesForImage);
+        setSelectedImageRectangles(storedRects);
+        // setUnselectAll(false);
     };
+
+    const handleImageChangeDimensions = (imageFile) => {
+        setImageDimensions(imageFile.dimensions);
+    }
+
+
+
 
     const handleExport = () => {
         const jsonData = JSON.stringify(imageRectangles);
@@ -284,7 +289,10 @@ const App = () => {
                                 }}
                                 variant="contained"
                                 onClick={() => {
-                                    handleImageChange(uploadedImage.url);
+                                    // remove all selected rectangles
+                                    const storedRectangles = localStorage.getItem(uploadedImage.url) || [];
+                                    handleImageChange(uploadedImage.url, storedRectangles);
+                                    handleImageChangeDimensions(uploadedImage);
                                 }}
                             >
                                 <img
@@ -326,14 +334,16 @@ const App = () => {
             {selectedImage && (
                 <PhotoEditor
                     imageDimensions={imageDimensions}
+                    handleImageChangeDimensions={handleImageChangeDimensions}
                     image={image}
                     initialColor={initialColor}
                     rectangles={imageRectangles[selectedImage] || []}
                     onRectanglesChange={handleRectanglesChange}
                     photoId={selectedImage}
+                    unselectAll={unselectAll}
+                    setUnselectAll={setUnselectAll}
                 />
             )}
-
             <SettingsModal
                 open={settingsOpen}
                 onClose={handleSettingsClose}

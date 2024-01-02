@@ -32,8 +32,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     const [rectangles, setRectangles] = useState(initialRectangles || []);
 
-    
-    const rectanglesToDraw = rectangles.length>0? rectangles.filter((rect) => rect.photoId === photoId) : [];
+
+    const rectanglesToDraw = rectangles.length > 0 ? rectangles.filter((rect) => rect.photoId === photoId) : [];
     const trRef = useRef();
     const selectionRectRef = useRef();
     const selection = useRef({
@@ -57,11 +57,11 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         return (
             (x >= imageRect.x) &&
             (x <= (imageRect.x + imageRect.width)) &&
-            (y >= imageRect.y )&&
+            (y >= imageRect.y) &&
             (y <= (imageRect.y + imageRect.height))
         );
     };
-    
+
     const calculateRelativePosition = (coordinate, scale) => coordinate / scale;
     const calculateRelativeSize = (size, scale) => size / scale;
 
@@ -70,7 +70,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
 
     useEffect(() => {
-        
+
         const handleWheelpress = (e) => {
             e.evt.preventDefault();
             if (e.evt.button === 1) {
@@ -125,31 +125,32 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             }
             // if ALT key is pressed then copy the selected rectangles
             if (e.key === "Alt") {
+                
                 setRectangles((prevRectangles) => {
                     const selectedRectangles = prevRectangles.filter((rect) =>
                         selectedIds.includes(rect.id)
                     );
-    
+
                     const updatedRectangles = [
                         ...prevRectangles,
                         ...selectedRectangles.map((selectedRect) => ({
                             ...selectedRect,
                             id: Date.now().toString() + k++,
                             key: Date.now().toString() + k++,
-                            x: selectedRect.x + 100,
-                            y: selectedRect.y + 100,
+                            x: selectedRect.x + 50,
+                            y: selectedRect.y + 50,
                         })),
                     ];
-    
+
                     return updatedRectangles;
                 });
 
             }
         };
-    
+
         const stage = stageRef.current;
         document.addEventListener("keydown", handleKeyDown);
-    
+
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
@@ -159,9 +160,14 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     const handleMouseDown = (event) => {
         if (isRectangle(event) || isTransformer(event)) return;
 
+        if (event.evt.button === 1) {
+            console.log("mouse move" + event.evt.button);
+            handleWheel(event);
+            return;
+        }
         if (event.evt.button !== 0) return;
 
-        
+
 
         const { x, y } = event.target.getStage().getPointerPosition();
 
@@ -186,14 +192,17 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
     };
 
     const handleMouseMove = (event) => {
-        if (event.evt.button !== 0) return;
+        if (event.evt.button === 1) {
+            return;
+        }
+
         if (newRectangle.length === 1) {
             const { x, y } = event.target.getStage().getPointerPosition();
             const updatedRect = { ...newRectangle[0] };
 
             updatedRect.width = calculateRelativeSize(x - stage.x, stage.scale) - updatedRect.x;
             updatedRect.height = calculateRelativeSize(y - stage.y, stage.scale) - updatedRect.y;
-            
+
             setNewRectangle([updatedRect]);
         }
     };
@@ -215,23 +224,23 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     const handleWheel = (e) => {
         e.evt.preventDefault();
-      
+
         const scaleBy = 1.1;
         const stage = e.target.getStage();
         const oldScale = stage.scaleX();
         const mousePointTo = {
-          x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-          y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
+            x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
+            y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
         };
         const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-      
+
         setStage((prevStage) => ({
-          ...prevStage,
-          scale: newScale,
-          x: (stage.getPointerPosition().x / newScale - mousePointTo.x) * newScale,
-          y: (stage.getPointerPosition().y / newScale - mousePointTo.y) * newScale,
+            ...prevStage,
+            scale: newScale,
+            x: (stage.getPointerPosition().x / newScale - mousePointTo.x) * newScale,
+            y: (stage.getPointerPosition().y / newScale - mousePointTo.y) * newScale,
         }));
-      };
+    };
 
 
 
@@ -290,14 +299,23 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
 
     useEffect(() => {
-        const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id));
+        const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id)) || [];
         trRef.current.nodes(nodes);
     }, [selectedIds]);
 
     const handleChangeImage = (newImageUrl) => {
-        selectShapes([]);
         setImageUrl(newImageUrl);
     };
+
+    // Inside the useImageStage hook
+    // useEffect(() => {
+    //     if (unselectAll && selectedIds.length > 0) {
+    //         // Unselect all rectangles
+    //         selectShapes([]);
+    //         unselectAll = false;
+    //     }
+    // }, [unselectAll, selectedIds, selectShapes]);
+
 
     return {
         rectangles: rectangles[photoId] || [],
@@ -306,10 +324,10 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
         rectanglesToDraw,
         layerRef,
         trRef,
-        selectionRectRef,
+        // selectionRectRef,
         setRectangles: (newRectangles) => {
             setRectangles(newRectangles);
-        
+
         },
         imageRef,
         stageProps: {

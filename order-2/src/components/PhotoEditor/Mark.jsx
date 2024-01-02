@@ -5,7 +5,6 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
   const shapeRef = useRef();
   const [lastRectPositionWithinImage, setLastRectPositionWithinImage] = useState({});
 
-  const strokeWidth = 5;
 
   const onDrag = (e) => {
     const width = e.currentTarget.width();
@@ -35,19 +34,26 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
       {...shapeProps}
       name="rectangle"
       draggable
-      stroke={color + "15"}
+      // color of rectangle
+      fill={color}
+      stroke={color}
+      strokeWidth={0}
+      
 
 
       onMouseEnter={(e) => {
         const rect = e.target;
-        rect.stroke(color + "15");
-        rect.getStage().container().style.cursor = "move";
+        // make rectangle darker on hover
+        rect.fill(color + "99");
+        // console.log("rect.fill(color + 20):", rect.fill(color + "80"));        
+        rect.getStage().container().style.cursor = "grab";
       }
 
       }
       onMouseLeave={(e) => {
         const rect = e.target;
-        rect.stroke(color);
+        // return rectangle to original color
+        rect.fill(color);
         rect.getStage().container().style.cursor = "default";
       }}
 
@@ -65,20 +71,23 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
         const node = shapeRef.current;
         const scaleX = node.scaleX();
         const scaleY = node.scaleY();
-        const width = Math.max(5, node.width() * scaleX);
-        const height = Math.max(5, node.height() * scaleY);
+        const width_ = Math.max(5, node.width() * scaleX);
+        const height_ = Math.max(node.height() * scaleY);
+        console.log("width_:", width_, "height_:", height_);
+        console.log("node.width():", node.width()*scaleX, "node.height():", node.height()*scaleY);
 
         onChange({
           ...shapeProps,
           x: node.x(),
           y: node.y(),
-          width: width,
-          height: height,
+          width: width_,
+          height: height_,
         });
       }}
+      fillAfterStrokeEnabled={false}
 
-      strokeScaleEnabled={false}
-      strokeWidth={strokeWidth}
+
+      
 
     />
   );

@@ -9,10 +9,11 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ColorPicker from 'react-color';
 import axios from 'axios';
+let k = 1;
 
 const SettingsModal = ({ open, onClose, onColorChange }) => {
     const [rectangles, setRectangles] = useState([
-        { name: '', color: '#ff0000', default: true }
+        { name: '1', color: '#ff0000', default: true }
     ]);
     localStorage.setItem('rectangles', JSON.stringify(rectangles));
     // rectangles.map((rect, index) => (
@@ -50,7 +51,7 @@ const SettingsModal = ({ open, onClose, onColorChange }) => {
 
 
     const handleAddRectangle = () => {
-        setRectangles([...rectangles, { name: '', color: '#ff0000', default: false }]);
+        setRectangles([...rectangles, { name: `${++k}`, color: '#ff0000', default: false }]);
     };
 
     const handleInputChange = (index, key, value) => {
