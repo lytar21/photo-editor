@@ -22,9 +22,9 @@ const Mark = ({ shapeProps, color, onChange, imageRef }) => {
     lastRectPositionWithinImage.x = x;
     lastRectPositionWithinImage.y = y;
 
-    if (!rectangleWithinImage) {
-      setLastRectPositionWithinImage({ x, y });
-    }
+    // if (!rectangleWithinImage) {
+    //   setLastRectPositionWithinImage({ 
+    // }
   };
 
 

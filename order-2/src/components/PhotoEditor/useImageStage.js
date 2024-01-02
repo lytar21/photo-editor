@@ -79,13 +79,6 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             }
         };
 
-        const handleWheelrelease = (e) => {
-            e.evt.preventDefault();
-            if (e.evt.button === 1) {
-                setWheelIsPressed(false);
-            }
-        }
-
         const handleWheelmove = (e) => {
             e.evt.preventDefault();
             if (wheelIsPressed) {
@@ -96,6 +89,13 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             }
         }
 
+
+        const handleWheelrelease = (e) => {
+            e.evt.preventDefault();
+            if (e.evt.button === 1) {
+                setWheelIsPressed(false);
+            }
+        }
         const stage = stageRef.current;
         stage.on("mousedown", handleWheelpress);
         stage.on("mouseup", handleWheelrelease);
@@ -125,7 +125,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
             }
             // if ALT key is pressed then copy the selected rectangles
             if (e.key === "Alt") {
-                
+
                 setRectangles((prevRectangles) => {
                     const selectedRectangles = prevRectangles.filter((rect) =>
                         selectedIds.includes(rect.id)
@@ -139,6 +139,8 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
                             key: Date.now().toString() + k++,
                             x: selectedRect.x + 50,
                             y: selectedRect.y + 50,
+                            width: selectedRect.width,
+                            height: selectedRect.height,
                         })),
                     ];
 
@@ -171,24 +173,24 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
         const { x, y } = event.target.getStage().getPointerPosition();
 
-        if (isWithinImageBounds(x, y)) {
+        // if (isWithinImageBounds(x, y)) {
 
 
-            setNewRectangle([
-                {
-                    x: calculateRelativePosition(x - stage.x, stage.scale),
-                    y: calculateRelativePosition(y - stage.y, stage.scale),
-                    width: 1 / stage.scale,
-                    height: 1 / stage.scale,
-                    key: Date.now().toString(),
-                    id: Date.now().toString(),
-                    fill: editorInitialColor,
-                    stroke: editorInitialColor,
-                    opacity: 0.5,
-                    photoId: photoId,
-                },
-            ]);
-        }
+        setNewRectangle([
+            {
+                x: calculateRelativePosition(x - stage.x, stage.scale),
+                y: calculateRelativePosition(y - stage.y, stage.scale),
+                width: 1 / stage.scale,
+                height: 1 / stage.scale,
+                key: Date.now().toString(),
+                id: Date.now().toString(),
+                fill: editorInitialColor,
+                stroke: editorInitialColor,
+                opacity: 0.5,
+                photoId: photoId,
+            },
+        ]);
+        // }
     };
 
     const handleMouseMove = (event) => {
@@ -224,6 +226,9 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     const handleWheel = (e) => {
         e.evt.preventDefault();
+        if (e.evt.button === 1) {
+            return;
+        }
 
         const scaleBy = 1.1;
         const stage = e.target.getStage();
@@ -299,6 +304,7 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
 
     useEffect(() => {
+        console.log("selectedIds changed", selectedIds.length);
         const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id)) || [];
         trRef.current.nodes(nodes);
     }, [selectedIds]);

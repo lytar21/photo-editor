@@ -31,6 +31,7 @@ const App = () => {
     const [photoId, setPhotoId] = useState(null);
     const [selectedFilter, setSelectedFilter] = useState("all");
     const [unselectAll, setUnselectAll] = useState(false);
+    const [firstPosition, setFirstPosition] = useState(false);
 
     useEffect(() => {
         const results = images.filter((image) => {
@@ -89,15 +90,22 @@ const App = () => {
                     const imageHeight = img.height;
 
                     const stageHeight = window.innerHeight;
-                    const stageWidth = window.innerWidth * 0.82;
+                    const stageWidth = window.innerWidth  * 0.82;
 
-                    if (imageWidth > imageHeight) {
+                    const imageRatio = imageWidth / imageHeight;
+                    const stageRatio = stageWidth / stageHeight;
+
+                    // if the image width is larger than the height, scale the image to fit the width of the stage
+                    if (imageRatio > stageRatio) {
                         width = stageWidth;
-                        height = (imageHeight / imageWidth) * stageWidth;
-                    } else {
-                        height = stageHeight;
-                        width = (imageWidth / imageHeight) * stageHeight;
+                        height = width / imageRatio;
                     }
+                    // otherwise, scale it to fit the height
+                    else {
+                        height = stageHeight;
+                        width = height * imageRatio;
+                    }
+
 
                     const newImage = {
                         url: URL.createObjectURL(file),
@@ -106,7 +114,6 @@ const App = () => {
                     };
 
                     setImages((prevImages) => [...prevImages, newImage]);
-                    setImageDimensions({ width, height });
                     handleRectanglesInitialization(newImage.url);
                 };
             };
@@ -157,11 +164,11 @@ const App = () => {
 
     const handleImageChange = (newImageUrl, storedRects) => {
         setUnselectAll(true);
+        setFirstPosition(true);
         setPhotoId(newImageUrl);
         setSelectedImage(newImageUrl);
         setImageUrl(newImageUrl);
         setSelectedImageRectangles(storedRects);
-        // setUnselectAll(false);
     };
 
     const handleImageChangeDimensions = (imageFile) => {
@@ -342,6 +349,10 @@ const App = () => {
                     photoId={selectedImage}
                     unselectAll={unselectAll}
                     setUnselectAll={setUnselectAll}
+                    firstPosition={firstPosition}
+                    setFirstPosition={setFirstPosition}
+                    windowWidth={window.innerWidth}
+                    windowHeight={window.innerHeight}
                 />
             )}
             <SettingsModal

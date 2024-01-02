@@ -8,7 +8,7 @@ let k = 0;
 
 import ContextMenu from "./ContextMenu.jsx";
 
-const PhotoEditor = ({ image, imageDimensions,handleImageChangeDimensions, initialColor: editorInitialColor, rectangles, onRectanglesChange, photoId, unselectAll, setUnselectAll }) => {
+const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor, rectangles, onRectanglesChange, photoId, unselectAll, setUnselectAll, firstPosition, setFirstPosition }) => {
     const {
         rectanglesToDraw,
         initialColor,
@@ -42,8 +42,10 @@ const PhotoEditor = ({ image, imageDimensions,handleImageChangeDimensions, initi
 
     const listOfColors = JSON.parse(localStorage.getItem('rectangles'));
 
-    const initialX = (window.innerWidth * 0.82 - imageDimensions.width);
-    const initialY = (window.innerHeight - imageDimensions.height);
+    const initialX = ((window.innerWidth *0.82)/2  - imageDimensions.width / 2);
+    const initialY = (window.innerHeight / 2 - imageDimensions.height / 2);
+
+    // if the image dimensions are bigger scale the image down
 
     const [drawing, setDrawing] = useState(false);
     const [rectangleDrawn, setRectangleDrawn] = useState(false);
@@ -51,14 +53,35 @@ const PhotoEditor = ({ image, imageDimensions,handleImageChangeDimensions, initi
     useEffect(() => {
         if (unselectAll) {
             setUnselectAll(false);
-            // console.log(trRef.current.nodes());
-            trRef.current.nodes([]);
+            // trRef.current.nodes([]);
+            selectShapes([]);
+            // also set the stage scale to 1
+            const stage = stageRef.current;
+            stage.scaleX(1);
+            stage.scaleY(1);
+            // also set the stage position to 0
+            stage.x(0);
+            stage.y(0);
+            // also set the stage rotation to 0
+            stage.rotation(0);
         }
     }, [unselectAll, setUnselectAll]);
 
     useEffect(() => {
+        if (firstPosition) {
+            setFirstPosition(false);
+            selectShapes([]);
+            
+        }
+    }, [firstPosition, setFirstPosition]);
+
+
+
+
+
+    useEffect(() => {
         const handleMouseDown = (event) => {
-            if (isRectangle(event) || isTransformer(event) || event.evt.button === 1) return;
+            if (isRectangle(event) || isTransformer(event) || event.evt.button === 1 || event.evt.button === 2) return;
 
             const { x, y } = event.target.getStage().getPointerPosition();
             const stage = stageRef.current;
@@ -117,7 +140,7 @@ const PhotoEditor = ({ image, imageDimensions,handleImageChangeDimensions, initi
                     if (prevRectangles[prevRectangles.length - 1].x === prevRectangles[prevRectangles.length - 2]?.x && prevRectangles[prevRectangles.length - 1].y === prevRectangles[prevRectangles.length - 2]?.y) {
                         return prevRectangles.slice(0, prevRectangles.length - 1);
                     }
-                    return prevRectangles;
+                    return prevRectangles.slice(0, prevRectangles.length - 1);
                 });
 
 
@@ -321,8 +344,8 @@ const PhotoEditor = ({ image, imageDimensions,handleImageChangeDimensions, initi
             <div>
                 <Stage
                     {...stageProps}
-                    width={imageDimensions.width}
-                    height={imageDimensions.height}
+                    width={window.innerWidth * 0.82}
+                    height={window.innerHeight}
                 >
                     <Layer ref={layerRef}>
                         <Image
