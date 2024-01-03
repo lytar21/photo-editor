@@ -146,14 +146,15 @@ const PhotoEditor = ({ image, imageDimensions, initialColor: editorInitialColor,
 
                 if (rectanglesToDraw[rectanglesToDraw.length - 1].width === 0 && rectanglesToDraw[rectanglesToDraw.length - 1].height === 0) {
                     selectShapes([]);
-                    setRectangles((prevRectangles) => {
-                        return prevRectangles.slice(0, prevRectangles.length - 1);
-                    });
+                    // setRectangles((prevRectangles) => {
+                    //     return prevRectangles.slice(0, prevRectangles.length - 1);
+                    // });
                     return;
                 }
 
-                selectShapes([rectanglesToDraw[rectanglesToDraw.length - 1].id]);
-
+                if (rectanglesToDraw[rectanglesToDraw.length - 1].width !== 0 && rectanglesToDraw[rectanglesToDraw.length - 1].height !== 0) {
+                    selectShapes([rectanglesToDraw[rectanglesToDraw.length - 1].id]);
+                }
             }
             // if there is more than one color, open context menu
             if (JSON.parse(localStorage.getItem('rectangles')).length > 1 && rectangleDrawn) {

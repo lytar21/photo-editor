@@ -305,22 +305,28 @@ export function useImageStage(initialRectangles, editorInitialColor, photoId) {
 
     useEffect(() => {
         console.log("selectedIds changed", selectedIds.length);
-        const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id)) || [];
-        trRef.current.nodes(nodes);
+        try {
+            const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id)) || [];
+            trRef.current.nodes(nodes);
+        }
+        catch (err) {
+            console.log(err);
+            // trRef.current.nodes([]);
+        }
+        
+        //     const nodes = selectedIds.map((id) => layerRef.current.findOne("#" + id)) || [];
+        //     trRef.current.nodes(nodes);
+        // } else {
+        //     trRef.current.nodes([]);
+
+        // }
+
     }, [selectedIds]);
 
     const handleChangeImage = (newImageUrl) => {
         setImageUrl(newImageUrl);
     };
 
-    // Inside the useImageStage hook
-    // useEffect(() => {
-    //     if (unselectAll && selectedIds.length > 0) {
-    //         // Unselect all rectangles
-    //         selectShapes([]);
-    //         unselectAll = false;
-    //     }
-    // }, [unselectAll, selectedIds, selectShapes]);
 
 
     return {
